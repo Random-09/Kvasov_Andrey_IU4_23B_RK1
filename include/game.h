@@ -1,12 +1,31 @@
 #ifndef KVASOV_ANDREY_IU4_23B_RK1_GAME_H
 #define KVASOV_ANDREY_IU4_23B_RK1_GAME_H
 
-#include <string.h>
-#include <stdbool.h>
+#define EASY_TEXT "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" \
+"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" \
+"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" \
+"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" \
+"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" \
+"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
-#define TEXT_1 "Some text to print on screen large enough to test all the features until my fantasy comes up with " \
-"something more original and suitable for a simple level of the game. OKAY that text wasn't large enough. So if you " \
-"thought that would stop me... you underestimated me! I will continue typing nonsense until my needs are fulfilled!"
+#define MEDIUM_TEXT "text 2"
+
+#define HARD_TEXT "text 3"
+
+#define EASY_TEXT_LEN 582
+
+#define MEDIUM_TEXT_LEN 10
+
+#define HARD_TEXT_LEN 10
+
+typedef struct GameData {
+    int text_pos;
+    int cursor_pos;
+    int remaining_len;
+    int total_space;
+    char *curr_text;
+    int curr_text_len;
+} GameData_t;
 
 typedef struct Statistics {
     int correct_symb_num;
@@ -16,10 +35,6 @@ typedef struct Statistics {
     float average_word_speed;
 } Statistics_t;
 
-void print_statistics(Statistics_t statistics);
-
-void check_args(char *difficulty, int time_limit, int error_limit);
-
-void print_help_msg();
+void print_part_of_text(GameData_t *game_data);
 
 #endif

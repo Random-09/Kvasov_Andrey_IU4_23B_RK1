@@ -2,14 +2,11 @@
 #include <stdlib.h>
 #include <ncurses.h>
 #include <getopt.h>
+#include <string.h>
 #include "include/game.h"
+#include "include/args_check.h"
 
 int main(int argc, char **argv) {
-    if (argc != 4) {
-        puts("Wrong number of args!");
-        print_help_msg();
-        exit(EXIT_FAILURE);
-    }
     int opt;
     int time_limit;
     int error_limit;
@@ -31,8 +28,34 @@ int main(int argc, char **argv) {
         }
     }
     check_args(difficulty, time_limit, error_limit);
+    char *curr_text;
+    int curr_text_len;
+    if (strcmp(difficulty, "easy") == 0) {
+        curr_text = EASY_TEXT;
+        curr_text_len = EASY_TEXT_LEN;
+    }
+    if (strcmp(difficulty, "medium") == 0) {
+        curr_text = MEDIUM_TEXT;
+        curr_text_len = MEDIUM_TEXT_LEN;
+    }
+    if (strcmp(difficulty, "hard") == 0) {
+        curr_text = HARD_TEXT;
+        curr_text_len = HARD_TEXT_LEN;
+    }
     initscr();
-    printw("%s %d %d\n", difficulty, time_limit, error_limit);
+    int height, width;
+    getmaxyx(stdscr, height, width);
+    int total_space = height * width;
+    GameData_t *game_data;
+    game_data = (GameData_t *) malloc(sizeof(GameData_t));
+    game_data->text_pos = 0;
+    game_data->cursor_pos = 0;
+    game_data->remaining_len = curr_text_len;
+    game_data->curr_text_len = curr_text_len;
+    game_data->curr_text = curr_text;
+    game_data->total_space = total_space;
+    print_part_of_text(game_data);
+    printw("%d", game_data->text_pos);
     refresh();
     getch();
     endwin();

@@ -1,27 +1,18 @@
 #include "../include/game.h"
 
+//void print_statistics() {
+//    mvprintw();
+//}
 
-void check_args(char *difficulty, int time_limit, int error_limit) {
-    bool show_help_msg = false;
-    if (strcmp(difficulty, "easy") > 0 || strcmp(difficulty, "medium") > 0 ||
-        strcmp(difficulty, "hard") > 0) {
-        puts("Difficulty argument does not match \"easy\" \"medium\" or \"hard\" options.\n");
-        show_help_msg = true;
-    }
-    if (time_limit == 0) {
-        puts("Time limit argument is not a digit or is equal to zero.\n");
-        show_help_msg = true;
-    }
-    if (error_limit == 0) {
-        puts("Error limit argument is not a digit or is equal to zero.\n");
-        show_help_msg = true;
-    }
-    if (show_help_msg)
-        print_help_msg();
-}
+// void init_game_data() {}
 
-
-void print_help_msg() {
-    puts("\nUsage:\n./RK1.elf <arguments>\n\nArguments:\n-d\t\tChoose difficulty (easy, medium or hard)\n"
-           "-t\t\tTime limit in seconds\n-e\t\tError limit\n");
+void print_part_of_text(GameData_t *game_data) {
+    int end_pos;
+    if (game_data->remaining_len < game_data->total_space)
+        end_pos = game_data->text_pos + game_data->remaining_len;
+    else
+        end_pos = game_data->text_pos + game_data->curr_text_len;
+    for (int i = game_data->text_pos; i < end_pos; i++)
+        printw("%c", game_data->curr_text[0]);
+    game_data->text_pos = end_pos;
 }
