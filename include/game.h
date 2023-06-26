@@ -20,6 +20,6 @@ void print_statistics(Statistics_t statistics);
 
 void check_args(char *difficulty, int time_limit, int error_limit);
 
-void print_help();
+void print_help_msg();
 
 #endif

@@ -5,6 +5,11 @@
 #include "include/game.h"
 
 int main(int argc, char **argv) {
+    if (argc != 4) {
+        puts("Wrong number of args!");
+        print_help_msg();
+        exit(EXIT_FAILURE);
+    }
     int opt;
     int time_limit;
     int error_limit;
@@ -25,9 +30,9 @@ int main(int argc, char **argv) {
                 exit(EXIT_FAILURE);
         }
     }
+    check_args(difficulty, time_limit, error_limit);
     initscr();
     printw("%s %d %d\n", difficulty, time_limit, error_limit);
-    check_args(difficulty, time_limit, error_limit);
     refresh();
     getch();
     endwin();
