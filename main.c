@@ -1,23 +1,35 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ncurses.h>
+#include <getopt.h>
 #include "include/game.h"
 
 int main(int argc, char **argv) {
-    if (argc != 4) {
-        puts("Wrong number of args!");
-        exit(EXIT_FAILURE);
+    int opt;
+    int time_limit;
+    int error_limit;
+    char *difficulty;
+    while ((opt = getopt(argc, argv, "d:t:e:")) != -1) {
+        switch (opt) {
+            case 'd':
+                difficulty = optarg;
+                break;
+            case 't':
+                time_limit = strtol(optarg, NULL, 10);
+                break;
+            case 'e':
+                error_limit = strtol(optarg, NULL, 10);
+                break;
+            default:
+                printw("default");
+                exit(EXIT_FAILURE);
+        }
     }
-    char *difficulty = argv[1];
-    int time_limit = strtol(argv[2], NULL, 10);
-    int error_limit = strtol(argv[3], NULL, 10);
-
-
-
     initscr();
-    printw("%s", TEXT_1);
+    printw("%s %d %d\n", difficulty, time_limit, error_limit);
+    check_args(difficulty, time_limit, error_limit);
     refresh();
     getch();
     endwin();
-    return ;
+    return 0;
 }
