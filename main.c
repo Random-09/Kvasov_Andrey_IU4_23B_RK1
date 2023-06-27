@@ -3,6 +3,7 @@
 #include <ncurses.h>
 #include <getopt.h>
 #include <string.h>
+#include <stdbool.h>
 #include "include/game.h"
 #include "include/args_check.h"
 
@@ -11,7 +12,7 @@ int main(int argc, char **argv) {
     int time_limit;
     int error_limit;
     char *difficulty;
-    while ((opt = getopt(argc, argv, "d:t:e:")) != -1) {
+    while ((opt = getopt(argc, argv, "d:t:e:")) != -1) {            // <---- АРГУМЕНТЫ (LONG_OPT)
         switch (opt) {
             case 'd':
                 difficulty = optarg;
@@ -28,35 +29,35 @@ int main(int argc, char **argv) {
         }
     }
     check_args(difficulty, time_limit, error_limit);
-    char *curr_text;
-    int curr_text_len;
-    if (strcmp(difficulty, "easy") == 0) {
-        curr_text = EASY_TEXT;
-        curr_text_len = EASY_TEXT_LEN;
-    }
-    if (strcmp(difficulty, "medium") == 0) {
-        curr_text = MEDIUM_TEXT;
-        curr_text_len = MEDIUM_TEXT_LEN;
-    }
-    if (strcmp(difficulty, "hard") == 0) {
-        curr_text = HARD_TEXT;
-        curr_text_len = HARD_TEXT_LEN;
-    }
     initscr();
-    int height, width;
-    getmaxyx(stdscr, height, width);
-    int total_space = height * width;
-    GameData_t *game_data;
-    game_data = (GameData_t *) malloc(sizeof(GameData_t));
-    game_data->text_pos = 0;
-    game_data->cursor_pos = 0;
-    game_data->remaining_len = curr_text_len;
-    game_data->curr_text_len = curr_text_len;
-    game_data->curr_text = curr_text;
-    game_data->total_space = total_space;
-    print_part_of_text(game_data);
-    printw("%d", game_data->text_pos);
-    refresh();
+    GameData_t *game_data = init_game_data(difficulty);
+    bool time_limit_reached = false;
+    bool error_limit_reached = false;
+    start_color();
+    init_pair(CORRECT_HIGHLIGHT, COLOR_GREEN, COLOR_BLACK);
+    init_pair(INCORRECT_HIGHLIGHT, COLOR_RED, COLOR_BLACK);
+    while (game_data->cursor_pos != game_data->curr_text_len || !time_limit_reached || !error_limit_reached) {
+        if (game_data->cursor_pos == game_data->text_pos || game_data->cursor_pos == 1) {
+            print_part_of_text(game_data);
+        }
+        refresh();
+        int symb = getch();
+        if (symb == game_data->curr_text[game_data->cursor_pos]) {
+            attron(COLOR_PAIR(CORRECT_HIGHLIGHT));
+            //move();
+            printw("%c", symb);
+//            attroff(COLOR_PAIR(CORRECT_HIGHLIGHT));
+        } else {
+            attron(COLOR_PAIR(INCORRECT_HIGHLIGHT));
+            printw("%c", symb);
+//            attroff(COLOR_PAIR(INCORRECT_HIGHLIGHT));
+            game_data->cursor_pos++;
+            game_data->remaining_len--;
+            int new_y = game_data->cursor_pos / game_data->width;
+            int new_x = game_data->cursor_pos % game_data->width;
+            move(new_y, new_x);
+        }
+    }
     getch();
     endwin();
     return 0;
