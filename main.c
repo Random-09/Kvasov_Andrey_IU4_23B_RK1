@@ -4,15 +4,18 @@
 #include <getopt.h>
 #include <string.h>
 #include <stdbool.h>
+#include <time.h>
 #include "include/game.h"
 #include "include/args_check.h"
+
+#define BILLION 1000000000.0
 
 int main(int argc, char **argv) {
     int opt;
     int time_limit;
     int error_limit;
     char *difficulty;
-    while ((opt = getopt(argc, argv, "d:t:e:")) != -1) {            // <---- АРГУМЕНТЫ (LONG_OPT)
+    while ((opt = getopt(argc, argv, "d:t:e:")) != -1) {
         switch (opt) {
             case 'd':
                 difficulty = optarg;
@@ -31,34 +34,56 @@ int main(int argc, char **argv) {
     check_args(difficulty, time_limit, error_limit);
     initscr();
     GameData_t *game_data = init_game_data(difficulty);
+    Statistics_t *statistics = malloc(sizeof(Statistics_t));
     bool time_limit_reached = false;
     bool error_limit_reached = false;
     start_color();
     init_pair(CORRECT_HIGHLIGHT, COLOR_GREEN, COLOR_BLACK);
     init_pair(INCORRECT_HIGHLIGHT, COLOR_RED, COLOR_BLACK);
-    while (game_data->cursor_pos != game_data->curr_text_len || !time_limit_reached || !error_limit_reached) {
-        if (game_data->cursor_pos == game_data->text_pos || game_data->cursor_pos == 1) {
-            print_part_of_text(game_data);
+    printw("%s", game_data->curr_text);
+    move(0, 0);
+    refresh();
+    struct timespec start, end;
+
+    clock_gettime(CLOCK_REALTIME, &start);
+    double time = 0;
+    while (game_data->cursor_pos != game_data->curr_text_len) {
+        clock_gettime(CLOCK_REALTIME, &end);
+
+        time = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / BILLION;
+
+        if (time >= time_limit) {
+            break;
         }
-        refresh();
         int symb = getch();
         if (symb == game_data->curr_text[game_data->cursor_pos]) {
             attron(COLOR_PAIR(CORRECT_HIGHLIGHT));
-            //move();
-            printw("%c", symb);
-//            attroff(COLOR_PAIR(CORRECT_HIGHLIGHT));
+            addch(game_data->curr_text[game_data->cursor_pos]);
+            statistics->correct_symb_num++;
         } else {
             attron(COLOR_PAIR(INCORRECT_HIGHLIGHT));
-            printw("%c", symb);
-//            attroff(COLOR_PAIR(INCORRECT_HIGHLIGHT));
-            game_data->cursor_pos++;
-            game_data->remaining_len--;
-            int new_y = game_data->cursor_pos / game_data->width;
-            int new_x = game_data->cursor_pos % game_data->width;
-            move(new_y, new_x);
+            addch(game_data->curr_text[game_data->cursor_pos]);
+            statistics->incorrect_symb_num++;
         }
+        if (game_data->curr_text[game_data->cursor_pos] == ' ' ||
+            game_data->curr_text[game_data->cursor_pos] == '\n')
+            statistics->total_words++;
+        refresh();
+        if (statistics->incorrect_symb_num >= error_limit) {
+            break;
+        }
+        game_data->cursor_pos++;
+        statistics->total_symb_num++;
+        move(0, game_data->cursor_pos);
     }
+    attroff(COLOR_PAIR(INCORRECT_HIGHLIGHT));
+    attroff(COLOR_PAIR(CORRECT_HIGHLIGHT));
+    double characters_per_minute = game_data->curr_text_len / (time/60);
+    double words_per_minute = statistics->total_words / (time/60);
+    print_statistics(statistics, characters_per_minute, words_per_minute);
     getch();
     endwin();
+    free(game_data);
+    free(statistics);
     return 0;
 }
